@@ -1,0 +1,166 @@
+//to view as datatable//
+val disCat = sqlContext.sql("SELECT user.name as UserName,user.location as loc,text,created_at," +
+      "CASE WHEN text like '%iphone%' THEN 'IPHONE'" +
+      "WHEN text like '%Samsung%' THEN 'SAMSUNG'" +
+      "WHEN text like '%Moto%' THEN 'MOTO'" +
+      "WHEN text like '%Redmi%' THEN 'REDMI'" +
+      "WHEN text like '%Xiaomi%' THEN 'XIAOMI'" +
+      "WHEN text like '%Nokia%' THEN 'NOKIA'" +
+      "WHEN text like '%lenovo%' THEN 'LENOVO'" +
+      "WHEN text like '%oppo%' THEN 'OPPO'" +
+      "WHEN text like '%OnePlus%' THEN 'ONEPLUS'" +
+      "WHEN text like '%BlackBerry%' THEN 'BLACKBERRY'" +
+      "WHEN text like '%HTC%' THEN 'HTC'" +
+      "END AS phoneType from tweetDatatable where text is not null")
+    disCat.createOrReplaceTempView("disCat2")
+
+    val disCat3 = sqlContext.sql("SELECT user.name as UserName,user.location as loc,text,created_at," +
+      "CASE WHEN text like '%IphoneX%' OR text like '%iphoneX%' OR text like '%Iphonex%' OR text like '%iphonex%' OR text like '%Iphone10%' THEN 'Iphone X'" +
+      "WHEN text like '%iphone7' OR text like '%iphone7plus%' OR text like '%iPHONE7' OR text like '%iPHONE 7' OR text like '%iphone 7' OR text like '%iPHONE7plus' OR text like '%iphone7 plus' THEN 'iphone7 Series'" +
+      "WHEN text like '%iphone8' OR text like '%iPHONE 8' OR text like '%iphone 8' OR text like '%iphone8plus%' OR text like '%iPHONE8' OR text like '%iPHONE8plus' OR text like '%iphone8 plus' THEN 'iphone8 Series'" +
+      "WHEN text like '%galaxy%' OR text like '%Galaxy%' THEN 'Galaxy'" +
+      "WHEN text like '%Xiaomi%' OR text like '%xiaomi%'  OR text like '%Redmi%'  OR text like '%Redmi%' THEN 'Redmi'" +
+      "WHEN text like '%oneplus%' OR text like '%OnePlus%'  OR text like '%ONEPLUS%' THEN 'OnePlus'" +
+      "WHEN text like '%moto%' OR text like '%MOTO%' THEN 'Moto'" +
+      "WHEN text like '%htc%' OR text like '%Htc%' OR text like '%HTC%' THEN 'HTC'" +
+      "WHEN text like '%BlackBerry%' OR text like '%blackberry%' THEN 'BlackBerry'" +
+      "END AS phoneType from tweetDatatable where text is not null")
+    disCat3.createOrReplaceTempView("disCat4")
+
+
+Queries:
+
+Query1)
+
+#Query for Popular languages used for more number of tweets on smart Phones.
+
+val Query1 = sqlContext.sql("SELECT lang, count(*) AS count FROM tweetDatatable WHERE lang<>'null' GROUP BY lang
+ORDER BY count DESC LIMIT 10");
+
+
+
+Query2)
+
+val r1 = sqlContext.sql("SELECT UserName,'IPHONE' as phoneType,count(*) as count FROM disCat2 WHERE phoneType='IPHONE' " +
+          "group by UserName order by count desc limit 1")
+        val r2 = sqlContext.sql("SELECT UserName,'SAMSUNG' as phoneType,count(*) as count FROM disCat2 WHERE phoneType='SAMSUNG' " +
+          "group by UserName order by count desc limit 1 ")
+        val r3 = sqlContext.sql("SELECT UserName,'MOTO' as phoneType,count(*) as count FROM disCat2 WHERE phoneType='MOTO' " +
+          "group by UserName order by count desc limit 1 ")
+        val r4 = sqlContext.sql("SELECT UserName,'REDMI' as phoneType,count(*) as count FROM disCat2 WHERE phoneType='REDMI' " +
+          "group by UserName order by count desc limit 1 ")
+        val r5 = sqlContext.sql("SELECT UserName,'XIAOMI' as phoneType,count(*) as count FROM disCat2 WHERE phoneType='XIAOMI' " +
+          "group by UserName order by count desc limit 1 ")
+        val r6 = sqlContext.sql("SELECT UserName,'NOKIA' as phoneType,count(*) as count FROM disCat2 WHERE phoneType='NOKIA' " +
+          "group by UserName order by count desc limit 1 ")
+        val r7 = sqlContext.sql("SELECT UserName,'LENOVO' as phoneType,count(*) as count FROM disCat2 WHERE phoneType='LENOVO' " +
+          "group by UserName order by count desc limit 1 ")
+        val r8 = sqlContext.sql("SELECT UserName,'OPPO' as phoneType,count(*) as count FROM disCat2 WHERE phoneType='OPPO' " +
+          "group by UserName order by count desc limit 1 ")
+        val r9 = sqlContext.sql("SELECT UserName,'ONEPLUS' as phoneType,count(*) as count FROM disCat2 WHERE phoneType='ONEPLUS' " +
+          "group by UserName order by count desc limit 1")
+        val r10 = sqlContext.sql("SELECT UserName,'BLACKBERRY' as phoneType,count(*) as count FROM disCat2 WHERE phoneType='BLACKBERRY' " +
+          "group by UserName order by count desc limit 1")
+        val r11 = sqlContext.sql("SELECT UserName,'HTC' as phoneType,count(*) as count FROM disCat2 WHERE phoneType='HTC' " +
+          "group by UserName order by count desc limit 1 ")
+
+        val Q2 = r1.union(r2).union(r3).union(r4).union(r5).union(r6).union(r7).union(r8).union(r9) union (r10).union(r11)
+
+
+Query3)
+
+val Q3=sqlContext.sql("SELECT distinct place.country, count(*) as count FROM tweetDatatable where place.country is not null " + "GROUP BY place.country ORDER BY count DESC")
+
+
+
+Query4)
+
+val day_data = sqlContext.sql("SELECT substring(user.created_at,1,3) as day from tweetDatatable where text is not null")
+
+val days_final = sqlContext.sql(
+          """ SELECT Case
+            |when day LIKE '%Mon%' then 'WEEKDAY'
+            |when day LIKE '%Tue%' then 'WEEKDAY'
+            |when day LIKE '%Wed%' then 'WEEKDAY'
+            |when day LIKE '%Thu%' then 'WEEKDAY'
+            |when day LIKE '%Fri%' then 'WEEKDAY'
+            |when day LIKE '%Sat%' then 'WEEKEND'
+            |when day LIKE '%Sun%' then 'WEEKEND'
+            | else
+            | null
+            | end as day1 from day_data where day is not null""".stripMargin)
+
+val Q4 = sqlContext.sql("SELECT day1 as Day,Count(*) as Day_Count from days_final where day1 is not null group by day1 order by count(*) desc")
+
+Query5)
+
+ val query5 = sqlContext.sql("SELECT COUNT(*) AS NumberOfTweets, 'iphone' as PhoneType FROM tweetDatatable where text LIKE '%iphone%' UNION SELECT COUNT(*) AS NumberOfTweets,'samsung' as PhoneType FROM tweetDatatable where text LIKE '%samsung%' UNION SELECT COUNT(*) AS NumberOfTweets, 'moto' as PhoneType FROM tweetDatatable where text LIKE '%moto%' UNION SELECT COUNT(*) AS NumberOfTweets, 'redmi' as PhoneType FROM tweetDatatable where text LIKE '%redmi%' UNION SELECT COUNT(*) AS NumberOfTweets,'oppo' as PhoneType FROM tweetDatatable where text LIKE '%oppo%' UNION SELECT COUNT(*) AS NumberOfTweets,'HTC' as PhoneType FROM tweetDatatable where text LIKE '%HTC%' UNION SELECT COUNT(*) AS NumberOfTweets,'Nokia' as PhoneType FROM tweetDatatable where text LIKE '%nokia%' UNION SELECT COUNT(*) AS NumberOfTweets,'lenovo' as PhoneType FROM tweetDatatable where text LIKE '%Lenovo%'order by NumberOfTweets desc");
+
+Query6)
+ #Identifying no of users actively tweeting on SmartPhones based on friends_count.
+
+val q6=sqlContext.sql("SELECT user.screen_name,MAX(user.friends_count) as friends_count from tweetDatatable  group by user.screen_name order by friends_count desc")
+q6.createOrReplaceTempView("friends_count_table")
+
+
+val q6=sqlContext.sql("SELECT screen_name,case when friends_count >=0 and friends_count <10000 then '0-10K' when friends_count >=10000 and friends_count <20000  then '10K-20K' else '>20K' end as range from friends_count_table")
+
+q6.createOrReplaceTempView("friends_count_ranges")
+
+
+val q6=sqlContext.sql("SELECT t.range as friends_count_range, count(*) as number_of_users from friends_count_ranges t group by t.range")
+
+Query7).
+
+val tweetcount=sqlContext.sql("SELECT SUBSTR(created_at, 0, 20) tweet_date, COUNT(1) tweet_count FROM tweets where text is not null GROUP  BY SUBSTR(created_at, 0, 20) ORDER BY COUNT(1) DESC LIMIT  5")
+
+Query8)
+
+val acctVerify=sqlContext.sql("SELECT distinct id, " +
+          "CASE when user.verified LIKE '%true%' THEN 'VERIFIED ACCOUNT'"+
+          "when user.verified LIKE '%false%' THEN 'NON-VERIFIED ACCOUNT'"+
+          "END AS Verified from tweets where text is not null")
+acctVerify.createOrReplaceTempView("acctVerify")
+        var acctVerifydata=sqlContext.sql("SELECT  Verified, Count(Verified) as Count from acctVerify where id is NOT NULL and Verified is not null group by Verified order by Count DESC")
+
+Query9)
+
+val timehour = sqlContext.sql("SELECT SUBSTRING(created_at,18,2) as hour from tweets where text is not null")
+
+        timehour.createOrReplaceTempView("timehour")
+
+        val timeAnalysis=sqlContext.sql(""" SELECT Case
+            |when hour>=0 and hour <4 then 'midnight'
+            |when hour>=4 and hour <7 then 'early Morning'
+            |when hour>=7 and hour <12 then 'Morning'
+            |when hour>=12 and hour <15 then 'afternoon'
+            |when hour>=15 and hour <18 then 'evening'
+            |when hour>=18 and hour <=23 then 'night'
+            end as time from timehour""".stripMargin)
+
+        timeAnalysis.createOrReplaceTempView("timeAnalysis")
+
+        val res = sqlContext.sql("SELECT time as hour,Count(*) as tweets_count from timeAnalysis where time is not null group by time order by count(*) desc")
+
+Query10)
+
+#users with more followers and language used, in descending order
+
+val Query10 = sqlContext.sql("SELECT user.screen_name, user.followers_count, lang, text FROM tweetDatatable WHERE text like '%phone%' and lang NOT LIKE 'null' order by user.followers_count desc limit 15");
+
+
+
+Query11)
+#Query for user with more number of tweets user got for his tweets in smartphones dataset
+
+ val query11 = sqlContext.sql("SELECT user.screen_name,text,retweeted_status.retweet_count FROM tweetDatatable ORDER BY retweeted_status.retweet_count DESC LIMIT 20");
+
+
+
+Query12)
+
+#Query for identifying number of tweets based on Operating Systems
+
+val query12 = sqlContext.sql("SELECT COUNT(*) AS NumberOfTweets, 'macOS' as PhoneType FROM tweetDatatable where text LIKE '% macOS %' UNION SELECT COUNT(*) AS NumberOfTweets,'ios' as PhoneType FROM tweetDatatable where text LIKE '% ios %' UNION SELECT COUNT(*) AS NumberOfTweets, 'Android' as PhoneType FROM tweetDatatable where text LIKE '% android %' UNION SELECT COUNT(*) AS NumberOfTweets, 'windows' as PhoneType FROM tweetDatatable where text LIKE '% windows %' order by NumberOfTweets desc");
+
+ 
